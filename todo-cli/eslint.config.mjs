@@ -1,6 +1,6 @@
 import globals from "globals";
 import pluginJs from "@eslint/js";
-import jestPlugin from "eslint-plugin-jest"; 
+import jestPlugin from "eslint-plugin-jest";
 export default [
   {
     files: ["**/*.js"],
@@ -19,6 +19,15 @@ export default [
         ...globals.browser,
         ...jestPlugin.environments.globals.globals, // Include Jest globals
       },
-    }
+    },
+  },
+  {
+    // other ESLint configuration options
+    ignores: [
+      "node_modules",
+      "build",
+      "dist",
+      // Add any other paths you want to ignore
+    ],
   }
 ];
