@@ -29,5 +29,5 @@ export default [
       "dist",
       // Add any other paths you want to ignore
     ],
-  }
+  },
 ];

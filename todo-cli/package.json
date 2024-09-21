@@ -8,7 +8,6 @@
     "test": "NODE_ENV=test jest --detectOpenHandles",
     "prepare": "husky install"
   },
-  
   "author": "Palak Singh <kushwahaps621@gmail.com>",
   "license": "ISC",
   "description": "",
@@ -30,6 +29,7 @@
     ]
   },
   "dependencies": {
+    "minimist": "^1.2.8",
     "pg": "^8.13.0",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.3"

@@ -1,13 +1,12 @@
+/* eslint-disable no-undef */
 "use strict";
 
 const fs = require("fs");
 const path = require("path");
 const Sequelize = require("sequelize");
 const process = require("process");
-// eslint-disable-next-line no-undef
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || "development";
-// eslint-disable-next-line no-undef
 const config = require(__dirname + "/../config/config.json")[env];
 const db = {};
 
@@ -23,19 +22,13 @@ if (config.use_env_variable) {
   );
 }
 
-fs
-  // eslint-disable-next-line no-undef
-  .readdirSync(__dirname)
+fs.readdirSync(__dirname)
   .filter((file) => {
     return (
-      file.indexOf(".") !== 0 &&
-      file !== basename &&
-      file.slice(-3) === ".js" &&
-      file.indexOf(".test.js") === -1
+      file.indexOf(".") !== 0 && file !== basename && file.slice(-3) === ".js"
     );
   })
   .forEach((file) => {
-    // eslint-disable-next-line no-undef
     const model = require(path.join(__dirname, file))(
       sequelize,
       Sequelize.DataTypes,
