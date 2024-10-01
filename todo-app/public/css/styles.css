@@ -2,6 +2,6 @@ body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.Todo-Item:hover .trash-icon{
+.Todo-Item:hover .trash-icon {
   display: block;
 }
