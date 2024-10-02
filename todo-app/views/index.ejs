@@ -13,15 +13,15 @@
     <div class="grid grid-cols-6">
         <div class="col-start-3 col-span-2">
             <%- include('header.ejs') %>
-                <form>
+                <form action="/todos" method="post">
                     <div class="flex gap-2 py-4">
                         <div class="flex-auto">
-                            <input type="text" placeholder="What's next?"
-                                class="border border-gray-600 rounded w-full p-2 text-gray-300 text-sm" required>
+                            <input type="text" name="title" placeholder="What's next?"
+                                class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm" required>
                         </div>
                         <div class="flex-auto">
-                            <input type="date"
-                                class="border border-gray-600 rounded w-full p-2 text-gray-300 text-sm leading-tight">
+                            <input type="date" name="dueDate"
+                                class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm leading-tight">
                         </div>
                         <div class="flex-none">
                             <button type="submit"
