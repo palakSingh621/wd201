@@ -1,3 +1,4 @@
+<% /* eslint-disable */ %>
 <h5>Overdue</h5>
 <p id="count-overdue">
     <%= overdueTasks.length %>
@@ -6,12 +7,12 @@
     <% for(var i=0; i < overdueTasks.length ; i++){ %>
         <li class="Todo-Item">
             <div class="flex items-center w-fit my-2 px-2 py-1 rounded hover:bg-purple-50">
-                <input id="todo-checkbox-<%= i %>" type="checkbox"
+                <input id="todo-checkbox-<%= overdueTasks[i].id %>" type="checkbox" <%= overdueTasks[i].completed ? "checked" : "" %>  onclick="updateTodo(<%= overdueTasks[i].id %>)"
                     class="w-4 h-4 text-blue-600 bg-gray-300 rounded border-gray-600">
-                <label for="todo-checkbox-<%= i %>" class="ml-2 text-sm text-gray-600 cursor-pointer">
+                <label for="todo-checkbox-<%= overdueTasks[i].id %>" class="ml-2 text-sm text-gray-600 cursor-pointer">
                     <%= overdueTasks[i].title; %>
                 </label>
-                <a href="#" class="hidden trash-icon ml-2">
+                <a href="#" class="hidden trash-icon ml-2"  onclick="deleteTodo(<%= overdueTasks[i].id %>)">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="size-4">
                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -20,7 +21,7 @@
                 </a>
             </div>
         </li>
-        <% } %>
+    <% } %>
 </ul>
 <h5>Due Today</h5>
 <p id="count-due-today">
@@ -30,12 +31,12 @@
     <% for(var i=0; i < dueTodayTasks.length ; i++){ %>
         <li class="Todo-Item">
             <div class="flex items-center w-fit my-2 px-2 py-1 rounded hover:bg-purple-50">
-                <input id="todo-checkbox-<%= i %>" type="checkbox"
+                <input id="todo-checkbox-<%= dueTodayTasks[i].id %>" type="checkbox" <%= dueTodayTasks[i].completed ? "checked" : "" %> onclick="updateTodo(<%= dueTodayTasks[i].id %>)"
                     class="w-4 h-4 text-blue-600 bg-gray-300 rounded border-gray-600">
-                <label for="todo-checkbox-<%= i %>" class="ml-2 text-sm text-gray-600 cursor-pointer">
+                <label for="todo-checkbox-<%= dueTodayTasks[i].id %>" class="ml-2 text-sm text-gray-600 cursor-pointer">
                     <%= dueTodayTasks[i].title; %>
                 </label>
-                <a href="#" class="hidden trash-icon ml-2">
+                <a href="#" class="hidden trash-icon ml-2" onclick="deleteTodo(<%= dueTodayTasks[i].id %>)" >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="size-4">
                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -44,7 +45,7 @@
                 </a>
             </div>
         </li>
-        <% } %>
+    <% } %>
 </ul>
 <h5>Due Later</h5>
 <p id="count-due-later">
@@ -53,13 +54,13 @@
 <ul class="list-none">
     <% for(var i=0; i < dueLaterTasks.length ; i++){ %>
         <li class="Todo-Item">
-            <div class="flex items-center w-fit my-2 px-2 py-1 rounded hover:bg-purple-50">
-                <input id="todo-checkbox-<%= i %>" type="checkbox"
+            <div class="flex items-center w-fit my-2 px-2 py-1 rounded hover:bg-purple-50"> 
+                <input id="todo-checkbox-<%= dueLaterTasks[i].id %>" type="checkbox" <%= dueLaterTasks[i].completed ? "checked" : "" %> onclick="updateTodo(<%= dueLaterTasks[i].id %>)"
                     class="w-4 h-4 text-blue-600 bg-gray-300 rounded border-gray-600">
-                <label for="todo-checkbox-<%= i %>" class="ml-2 text-sm text-gray-600 cursor-pointer">
+                <label for="todo-checkbox-<%= dueLaterTasks[i].id %>" class="ml-2 text-sm text-gray-600 cursor-pointer">
                     <%= dueLaterTasks[i].title; %>
                 </label>
-                <a href="#" class="hidden trash-icon ml-2">
+                <a href="#" class="hidden trash-icon ml-2" onclick="deleteTodo(<%= dueLaterTasks[i].id%>)">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="size-4">
                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -68,5 +69,5 @@
                 </a>
             </div>
         </li>
-        <% } %>
+    <% } %>
 </ul>

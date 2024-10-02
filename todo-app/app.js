@@ -10,20 +10,21 @@ app.use(express.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
 
 app.get("/", async (request, response) => {
-  const allTodos = await Todo.getTodos();
   const overdueTasks = await Todo.overdue();
   const dueTodayTasks = await Todo.dueToday();
   const dueLaterTasks = await Todo.dueLater();
-
   if (request.accepts("html")) {
     response.render("index", {
-      allTodos,
       overdueTasks: overdueTasks,
       dueLaterTasks: dueLaterTasks,
       dueTodayTasks: dueTodayTasks,
     });
   } else {
-    response.json(allTodos);
+    response.json({
+      overdueTasks,
+      dueTodayTasks,
+      dueLaterTasks,
+    });
   }
 });
 
@@ -55,8 +56,7 @@ app.get("/todos/:id", async function (request, response) {
 
 app.post("/todos", async function (request, response) {
   try {
-    // eslint-disable-next-line no-unused-vars
-    const todo = await Todo.addTodo(request.body);
+    await Todo.addTodo(request.body);
     return response.redirect("/");
   } catch (error) {
     console.log(error);
@@ -78,22 +78,11 @@ app.put("/todos/:id/markAsCompleted", async function (request, response) {
 app.delete("/todos/:id", async function (request, response) {
   console.log("We have to delete a Todo with ID: ", request.params.id);
   try {
-    // Delete the Todo with the specified ID
-    const result = await Todo.destroy({
-      where: {
-        id: request.params.id,
-      },
-    });
-
-    // If `result` is 1, it means the Todo was deleted, otherwise it was not found
-    if (result === 1) {
-      response.send(true);
-    } else {
-      response.send(false);
-    }
+    await Todo.remove(request.params.id);
+    return response.json({ success: true });
   } catch (error) {
     console.error("Error deleting todo:", error);
-    response.status(500).send(false);
+    response.status(422).send(false);
   }
 });
 
