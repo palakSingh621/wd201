@@ -38,6 +38,7 @@
     "cookie-parser": "^1.4.6",
     "csurf": "^1.10.0",
     "pg": "^8.13.0",
-    "sequelize": "^6.37.3"
+    "sequelize": "^6.37.3",
+    "tiny-csrf": "^1.1.4"
   }
 }

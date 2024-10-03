@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 const express = require("express");
 const app = express();
-var csrf = require("csurf");
+var csrf = require("tiny-csrf");
 var cookieParser = require("cookie-parser");
 const path = require("path");
 const { Todo } = require("./models");
@@ -10,7 +10,7 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser("ssh! some secret string"));
-app.use(csrf({ cookie: true }));
+app.use(csrf("123456789iamasecret987654321look", ["POST", "PUT", "DELETE"])); //secret key should be 32-characters long
 
 app.set("view engine", "ejs");
 
