@@ -18,11 +18,13 @@ app.get("/", async (request, response) => {
   const overdueTasks = await Todo.overdue();
   const dueTodayTasks = await Todo.dueToday();
   const dueLaterTasks = await Todo.dueLater();
+  const completedTasks = await Todo.completedItems();
   if (request.accepts("html")) {
     response.render("index", {
       overdueTasks,
       dueLaterTasks,
       dueTodayTasks,
+      completedTasks,
       csrfToken: request.csrfToken(),
     });
   } else {
@@ -30,6 +32,7 @@ app.get("/", async (request, response) => {
       overdueTasks,
       dueTodayTasks,
       dueLaterTasks,
+      completedTasks,
     });
   }
 });
@@ -61,19 +64,30 @@ app.get("/todos/:id", async function (request, response) {
 });
 
 app.post("/todos", async function (request, response) {
+  const { title, dueDate } = request.body;
+
+  if (!title.trim() || !dueDate) {
+    return response
+      .status(400)
+      .json({ error: "Title and Due Date are required" });
+  }
+
   try {
-    await Todo.addTodo(request.body);
+    await Todo.addTodo({
+      title: title.trim(),
+      dueDate: dueDate,
+    });
     return response.redirect("/");
   } catch (error) {
     console.log(error);
-    return response.status(422).json(error);
+    return response.status(422).json({ error: "Error creating todo" });
   }
 });
 
-app.put("/todos/:id/markAsCompleted", async function (request, response) {
+app.put("/todos/:id", async function (request, response) {
   const todo = await Todo.findByPk(request.params.id);
   try {
-    const updatedTodo = await todo.markAsCompleted();
+    const updatedTodo = await todo.setCompletionStatus(request.body.completed);
     return response.json(updatedTodo);
   } catch (error) {
     console.log(error);

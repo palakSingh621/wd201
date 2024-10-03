@@ -5,46 +5,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<%= csrfToken %>">
+    <title>Todo Application</title>
     <link href="./css/styles.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <title>Todo Application</title>
+
     <script>
-        var token=document.querySelector('meta[name="csrf-token"]').getAttribute("content");
-        function updateTodo(id){
-            fetch(`/todos/${id}/markAsCompleted`,{
-                method: "put",
-                headers: {"Content-Type":"application/json",
-                    "CSRF-Token": "<%= csrfToken %>"
+        var token = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+
+        function updateTodo(id, isCompleted) {
+            fetch(`/todos/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    "_csrf": token,
+                    "completed": isCompleted
+                })
+            })
+                .then((res) => {
+                    if (res.ok) {
+                        window.location.reload();
+                    }
+
+                })
+                .catch((err) => console.error(err));
+        }
+
+        function deleteTodo(id) {
+            fetch(`/todos/${id}`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
                     "_csrf": token,
                 })
             })
-            .then((res)=>{
-                if(res.ok){
-                    window.location.reload();
-                }
-                
-            })
-            .catch((err) => console.error(err));
+                .then((res) => {
+                    if (res.ok) {
+                        window.location.reload();
+                    }
+                })
+                .catch((err) => console.error(err));
         }
 
-        function deleteTodo(id){
-            fetch(`/todos/${id}`,{
-                method: "delete",
-                headers: {"Content-Type":"application/json",
-                    "CSRF-Token": "<%= csrfToken %>"
-                 },
-                body: JSON.stringify({
-                    "_csrf":token,
-                })
-            })
-            .then((res)=>{
-                if(res.ok){
-                    window.location.reload();
-                }   
-            })
-            .catch((err) => console.error(err));
+        function validateForm(event) {
+            const titleInput = document.querySelector('input[name="title"]');
+
+            if (titleInput.value.trim() === "") {
+                alert("Title cannot be empty!");
+                event.preventDefault();
+                return;
+            }
         }
     </script>
 </head>
@@ -53,7 +64,7 @@
     <div class="grid grid-cols-6">
         <div class="col-start-3 col-span-2">
             <%- include('header.ejs') %>
-                <form action="/todos" method="post">
+                <form action="/todos" method="post" onsubmit="validateForm(event)">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                     <div class="flex gap-2 py-4">
                         <div class="flex-auto">
@@ -62,7 +73,8 @@
                         </div>
                         <div class="flex-auto">
                             <input type="date" name="dueDate"
-                                class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm leading-tight">
+                                class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm leading-tight"
+                                required>
                         </div>
                         <div class="flex-none">
                             <button type="submit"
