@@ -116,10 +116,12 @@ app.get("/", async (request, response) => {
   if (request.isAuthenticated()) {
     return response.redirect("/todos");
   }
-  response.render("index", {
-    title: "Todo Application",
-    csrfToken: request.csrfToken(),
-  });
+  if (request.accepts("html")) {
+    return response.render("index", {
+      title: "Todo Application",
+      csrfToken: request.csrfToken(),
+    });
+  }
 });
 
 app.set("views", path.join(__dirname, "views"));
@@ -216,34 +218,30 @@ app.get("/signout", (request, response, next) => {
 });
 
 //insert a todo item
-app.post(
-  "/todos",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    console.log("Incoming reqiest data:", request.body);
-    const completedStatus = request.body.completed ? true : false;
-    console.log("completion status:", completedStatus);
-    console.log("CSRF Token:", request.csrfToken());
-    try {
-      const todo = await Todo.addTodo({
-        title: request.body.title.trim(),
-        dueDate: request.body.dueDate.trim(),
-        userId: request.user.id,
-      });
-      request.flash("success", "Todo created successfully!");
-      if (request.accepts("html")) response.redirect("/todos");
-      else response.json(todo);
-    } catch (error) {
-      if (error.name === "SequelizeValidationError") {
-        const messages = error.errors.map((err) => err.message);
-        request.flash("error", messages);
-      } else {
-        request.flash("error", "Something went wrong while creating the todo");
-      }
-      return response.redirect("/todos");
+app.post("/todos", async (request, response) => {
+  console.log("Incoming reqiest data:", request.body);
+  const completedStatus = request.body.completed ? true : false;
+  console.log("completion status:", completedStatus);
+  console.log("CSRF Token:", request.csrfToken());
+  try {
+    const todo = await Todo.addTodo({
+      title: request.body.title.trim(),
+      dueDate: request.body.dueDate.trim(),
+      userId: request.user.id,
+    });
+    request.flash("success", "Todo created successfully!");
+    if (request.accepts("html")) return response.redirect("/todos");
+    else response.json(todo);
+  } catch (error) {
+    if (error.name === "SequelizeValidationError") {
+      const messages = error.errors.map((err) => err.message);
+      request.flash("error", messages);
+    } else {
+      request.flash("error", "Something went wrong while creating the todo");
     }
-  },
-);
+    return response.redirect("/todos");
+  }
+});
 
 // // get all todos
 // app.get("/todos", connectEnsureLogin.ensureLoggedIn(), async function (request, response) {
@@ -262,53 +260,43 @@ app.post(
 // });
 
 //find todo by id for user
-app.get(
-  "/todos/:id",
-  connectEnsureLogin.ensureLoggedIn(),
-  async function (request, response) {
-    try {
-      const todo = await Todo.findOne({
-        where: {
-          id: request.params.id,
-          userId: request.user.id,
-        },
-      });
-      if (!todo) {
-        return response.status(404).json({ error: "Todo not found" });
-      }
-      return response.json(todo);
-    } catch (error) {
-      console.log(error);
-      return response.status(422).json(error);
+app.get("/todos/:id", async function (request, response) {
+  try {
+    const todo = await Todo.findOne({
+      where: {
+        id: request.params.id,
+        userId: request.user.id,
+      },
+    });
+    if (!todo) {
+      return response.status(404).json({ error: "Todo not found" });
     }
-  },
-);
+    return response.json(todo);
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
 
 //update todo completed status
-app.put(
-  "/todos/:id",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    try {
-      const todo = await Todo.findOne({
-        where: {
-          id: request.params.id,
-          userId: request.user.id,
-        },
-      });
-      if (!todo) {
-        return response.status(404).json({ error: "Todo not found" });
-      }
-      const updatedTodo = await todo.setCompletionStatus(
-        request.body.completed,
-      );
-      response.json(updatedTodo);
-    } catch (error) {
-      console.log(error);
-      response.status(422).json(error);
+app.put("/todos/:id", async (request, response) => {
+  try {
+    const todo = await Todo.findOne({
+      where: {
+        id: request.params.id,
+        userId: request.user.id,
+      },
+    });
+    if (!todo) {
+      return response.status(404).json({ error: "Todo not found" });
     }
-  },
-);
+    const updatedTodo = await todo.setCompletionStatus(request.body.completed);
+    response.json(updatedTodo);
+  } catch (error) {
+    console.log(error);
+    response.status(422).json(error);
+  }
+});
 
 //delete a todo
 app.delete(
@@ -317,8 +305,12 @@ app.delete(
   async (request, response) => {
     console.log("delete todo with id:", request.params.id);
     try {
-      await Todo.remove(request.params.id, request.user.id);
-      return response.send(true);
+      const data = await Todo.remove(request.params.id, request.user.id);
+      if (data == 1) {
+        return response.send(true);
+      } else {
+        return response.send(false);
+      }
     } catch (error) {
       console.log(error);
       response.status(422).send(false);
