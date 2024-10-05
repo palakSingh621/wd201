@@ -12,7 +12,7 @@ function extractCsrfToken(response) {
 
 const login = async (agent, username, password) => {
   let res = await agent.get("/login");
-  const csrfToken = extractCsrfToken(res);
+  let csrfToken = extractCsrfToken(res);
   res = await agent.post("/session").send({
     email: username,
     password: password,
@@ -20,7 +20,7 @@ const login = async (agent, username, password) => {
   });
 };
 
-describe("List the todo items", function () {
+describe("Todo application", function () {
   beforeAll(async () => {
     await db.sequelize.sync({ force: true });
     server = app.listen(4000, () => {});
@@ -35,7 +35,8 @@ describe("List the todo items", function () {
       console.log(error);
     }
   });
-  test("Sign UP test", async () => {
+
+  test("Sign up test", async () => {
     let res = await agent.get("/signup");
     const csrfToken = extractCsrfToken(res);
     res = await agent.post("/users").send({
@@ -48,7 +49,7 @@ describe("List the todo items", function () {
     expect(res.statusCode).toBe(302);
   });
 
-  test("Sign Out test", async () => {
+  test("Sign out test", async () => {
     let res = await agent.get("/todos");
     expect(res.statusCode).toBe(302);
     res = await agent.get("/signout");
@@ -57,15 +58,15 @@ describe("List the todo items", function () {
     expect(res.statusCode).toBe(302);
   });
 
-  test("Creates a new todo", async () => {
+  test("Creates a todo", async () => {
     const agent = request.agent(server);
     await login(agent, "user.a@test.com", "12345678");
-    let res = await agent.get("/signup");
+    const res = await agent.get("/signup");
     const csrfToken = extractCsrfToken(res);
     expect(csrfToken).toBeDefined();
     let response = await agent.post("/todos").send({
       title: "Buy milk",
-      dueDate: new Date().toISOString().slice(0, 10),
+      dueDate: new Date().toISOString(),
       completed: false,
       _csrf: csrfToken,
     });

@@ -72,7 +72,7 @@
                     <%= messages.success %>
                 </div>
             <% } %>
-            <button><a href="/signout">signout</a></button>
+            <a href="/signout">signout</a>
             <form action="/todos" method="post" onsubmit="validateForm(event)">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <div class="flex gap-2 py-4">

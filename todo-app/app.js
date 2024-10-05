@@ -173,17 +173,20 @@ app.get("/signup", (request, response) => {
 app.post("/users", async (request, response) => {
   try {
     const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
-
-    const user = await User.create({
+    if (request.body.password.trim() === "") {
+      throw new Error("Password cannot not be empty");
+    }
+    console.log("Creating user:", req.body);
+    let user = await User.create({
       firstName: request.body.firstName.trim(),
       secondName: request.body.lastName.trim(),
       email: request.body.email.trim(),
       password: hashedPwd,
     });
+    console.log("User created:", user.dataValues);
     request.login(user, (err) => {
       if (err) {
         console.log(err);
-        request.flash("error", "Error logging in after signup");
         return response.redirect("/signup");
       }
       request.flash("success", "Signup successful !");
@@ -222,13 +225,14 @@ app.post(
     console.log("completion status:", completedStatus);
     console.log("CSRF Token:", request.csrfToken());
     try {
-      await Todo.addTodo({
+      const todo = await Todo.addTodo({
         title: request.body.title.trim(),
         dueDate: request.body.dueDate.trim(),
         userId: request.user.id,
       });
       request.flash("success", "Todo created successfully!");
-      return response.redirect("/todos");
+      if (request.accepts("html")) response.redirect("/todos");
+      else response.json(todo);
     } catch (error) {
       if (error.name === "SequelizeValidationError") {
         const messages = error.errors.map((err) => err.message);
@@ -298,10 +302,10 @@ app.put(
       const updatedTodo = await todo.setCompletionStatus(
         request.body.completed,
       );
-      return response.json(updatedTodo);
+      response.json(updatedTodo);
     } catch (error) {
       console.log(error);
-      return response.status(422).json(error);
+      response.status(422).json(error);
     }
   },
 );
@@ -311,11 +315,13 @@ app.delete(
   "/todos/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
+    console.log("delete todo with id:", request.params.id);
     try {
       await Todo.remove(request.params.id, request.user.id);
-      return response.json({ success: true });
+      return response.send(true);
     } catch (error) {
-      response.status(422).json(error);
+      console.log(error);
+      response.status(422).send(false);
     }
   },
 );
