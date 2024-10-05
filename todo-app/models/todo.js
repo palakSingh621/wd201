@@ -9,20 +9,24 @@ module.exports = (sequelize, DataTypes) => {
      */
     // eslint-disable-next-line no-unused-vars
     static associate(models) {
-      // define association here
+      Todo.belongsTo(models.User, {
+        foreignKey: "userId",
+      });
     }
-    static addTodo({ title, dueDate }) {
-      return this.create({ title: title, dueDate: dueDate, completed: false });
+    static addTodo({ title, dueDate, userId }) {
+      return this.create({
+        title: title,
+        dueDate: dueDate,
+        completed: false,
+        userId,
+      });
     }
 
-    static getTodos() {
-      return this.findAll();
-    }
-
-    static async remove(id) {
+    static async remove(id, userId) {
       return this.destroy({
         where: {
           id: id,
+          userId,
         },
       });
     }
@@ -31,53 +35,76 @@ module.exports = (sequelize, DataTypes) => {
       return this.update({ completed: isCompleted });
     }
 
-    static async overdue() {
+    static async overdue(userId) {
       const today = new Date().toISOString().slice(0, 10);
       return await Todo.findAll({
         where: {
           dueDate: {
-            [Op.lt]: today, // Less than today's date
+            [Op.lt]: today,
           },
+          userId,
           completed: false,
         },
       });
     }
 
-    static async dueToday() {
+    static async dueToday(userId) {
       const today = new Date().toISOString().slice(0, 10);
       return await Todo.findAll({
         where: {
           dueDate: today,
+          userId,
           completed: false,
         },
       });
     }
 
-    static async dueLater() {
+    static async dueLater(userId) {
       const today = new Date().toISOString().slice(0, 10);
       return await Todo.findAll({
         where: {
           dueDate: {
             [Op.gt]: today,
           },
+          userId,
           completed: false,
         },
       });
     }
 
-    static async completedItems() {
+    static async completedItems(userId) {
       return await Todo.findAll({
         where: {
           completed: true,
+          userId,
         },
       });
     }
   }
   Todo.init(
     {
-      title: DataTypes.STRING,
-      dueDate: DataTypes.DATEONLY,
-      completed: DataTypes.BOOLEAN,
+      title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notEmpty: {
+            msg: "Title cannot be empty",
+          },
+        },
+      },
+      dueDate: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        validate: {
+          notEmpty: {
+            msg: "Due date cannot be empty",
+          },
+        },
+      },
+      completed: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
     },
     {
       sequelize,

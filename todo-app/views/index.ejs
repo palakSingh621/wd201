@@ -5,89 +5,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<%= csrfToken %>">
-    <title>Todo Application</title>
+    <title>
+        Todo Application
+    </title>
     <link href="./css/styles.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <script>
-        var token = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
-
-        function updateTodo(id, isCompleted) {
-            fetch(`/todos/${id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    "_csrf": token,
-                    "completed": isCompleted
-                })
-            })
-                .then((res) => {
-                    if (res.ok) {
-                        window.location.reload();
-                    }
-
-                })
-                .catch((err) => console.error(err));
-        }
-
-        function deleteTodo(id) {
-            fetch(`/todos/${id}`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    "_csrf": token,
-                })
-            })
-                .then((res) => {
-                    if (res.ok) {
-                        window.location.reload();
-                    }
-                })
-                .catch((err) => console.error(err));
-        }
-
-        function validateForm(event) {
-            const titleInput = document.querySelector('input[name="title"]');
-
-            if (titleInput.value.trim() === "") {
-                alert("Title cannot be empty!");
-                event.preventDefault();
-                return;
-            }
-        }
-    </script>
 </head>
 
 <body>
     <div class="grid grid-cols-6">
         <div class="col-start-3 col-span-2">
             <%- include('header.ejs') %>
-                <form action="/todos" method="post" onsubmit="validateForm(event)">
-                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                    <div class="flex gap-2 py-4">
-                        <div class="flex-auto">
-                            <input type="text" name="title" placeholder="What's next?"
-                                class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm" required>
-                        </div>
-                        <div class="flex-auto">
-                            <input type="date" name="dueDate"
-                                class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm leading-tight"
-                                required>
-                        </div>
-                        <div class="flex-none">
-                            <button type="submit"
-                                class="bg-green-600 text-white px-5 py-1.5 rounded font-medium mr-2 mb-2">Add</button>
-                        </div>
-                    </div>
-                </form>
-                <div>
-                    <%- include('todos') %>
-                </div>
+                <p class="py-2"> Welcome to To-Do Manager</p>
+                <p class="py-2">New Here? <a href='/signup' class="text-green-600">Sign-Up</a></p>
+                <p class="py-2">Already a User <a href='/login' class="text-green-600">Sign-In</a></p>
         </div>
     </div>
-    <!-- <%- include('footer.ejs') %>  -->
 </body>
 
 </html>
