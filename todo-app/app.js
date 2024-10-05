@@ -108,6 +108,7 @@ app.get("/login", (request, response) => {
   response.render("login", { title: "Login", csrfToken: request.csrfToken() });
 });
 
+//calling models
 const { Todo, User } = require("./models");
 
 //render index.ejs with csrfToken
