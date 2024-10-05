@@ -34,11 +34,13 @@
                             class="text-white bg-green-600 hover:bg-green-800 px-5 py-1.5 rounded font-medium mr-2 mb-2">Sign-In</button>
                     </div>
                 </form>
-                <% if (messages.error) { %>
-                    <div class="error">
-                        <%= messages.error %>
-                    </div>
-                    <% } %>
+                <% if(messages && messages.error && messages.error.length> 0) { %>
+                    <% for(var i=0; i<messages.error.length; i++) { %>
+                        <li>
+                            <%= messages.error[i] %>
+                        </li>
+                        <% } %>
+                            <% } %>
         </div>
 </body>
 

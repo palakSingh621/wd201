@@ -67,47 +67,38 @@
     <div class="grid grid-cols-6">
         <div class="col-start-3 col-span-2">
             <%- include('header.ejs') %>
-
-                <% if(messages.error){ %>
-                    <div class="error-message">
-                        <ul>
-                            <% messages.error.forEach(function(message){ %>
-                                <li>
-                                    <%= message %>
-                                </li>
-                                <% }); %>
-                        </ul>
+            <% if(messages.success){%>
+                <div class="success-message">
+                    <%= messages.success %>
+                </div>
+            <% } %>
+            <button><a href="/signout">signout</a></button>
+            <form action="/todos" method="post" onsubmit="validateForm(event)">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                <div class="flex gap-2 py-4">
+                    <div class="flex-auto">
+                        <input type="text" name="title" placeholder="What's next?" class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm">
                     </div>
-                    <% } %>
-
-                        <% if(messages.success){%>
-                            <div class="success-message">
-                                <%= messages.success %>
-                            </div>
-                            <% } %>
-                                <button><a href="/signout">signout</a></button>
-                                <form action="/todos" method="post" onsubmit="validateForm(event)">
-                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                                    <div class="flex gap-2 py-4">
-                                        <div class="flex-auto">
-                                            <input type="text" name="title" placeholder="What's next?"
-                                                class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm">
-                                        </div>
-                                        <div class="flex-auto">
-                                            <input type="date" name="dueDate"
-                                                class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm leading-tight">
-                                        </div>
-                                        <div class="flex-none">
-                                            <button type="submit"
-                                                class="bg-green-600 text-white px-5 py-1.5 rounded font-medium mr-2 mb-2">Add</button>
-                                        </div>
-                                    </div>
-                                </form>
-                                <div>
-                                    <%- include('todo.ejs') %>
-                                </div>
+                    <div class="flex-auto">
+                        <input type="date" name="dueDate" class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm leading-tight">
+                    </div>
+                    <div class="flex-none">
+                        <button type="submit" class="bg-green-600 text-white px-5 py-1.5 rounded font-medium mr-2 mb-2">Add</button>
+                    </div>
+                </div>
+            </form>
+            <div>
+                <%- include('todo.ejs')%>
+            </div>
+            <% if(messages && messages.error && messages.error.length> 0) { %>
+                <% for(var i=0; i<messages.error.length; i++) { %>
+                    <li>
+                        <%= messages.error[i] %><br>
+                    </li>
+                <% } %>
+            <% } %>
         </div>
     </div>
+    <%- include('footer.ejs') %>
 </body>
-
 </html>
