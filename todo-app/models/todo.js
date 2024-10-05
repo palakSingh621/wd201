@@ -45,6 +45,7 @@ module.exports = (sequelize, DataTypes) => {
           userId,
           completed: false,
         },
+        order: [["id", "ASC"]],
       });
     }
 
@@ -56,6 +57,7 @@ module.exports = (sequelize, DataTypes) => {
           userId,
           completed: false,
         },
+        order: [["id", "ASC"]],
       });
     }
 
@@ -69,6 +71,7 @@ module.exports = (sequelize, DataTypes) => {
           userId,
           completed: false,
         },
+        order: [["id", "ASC"]],
       });
     }
 
@@ -78,6 +81,7 @@ module.exports = (sequelize, DataTypes) => {
           completed: true,
           userId,
         },
+        order: [["id", "ASC"]],
       });
     }
   }
@@ -87,6 +91,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
+          notNull: {
+            msg: "Todo title is required",
+          },
           notEmpty: {
             msg: "Title cannot be empty",
           },
@@ -96,6 +103,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         allowNull: false,
         validate: {
+          notNull: {
+            msg: "Due date is required",
+          },
           notEmpty: {
             msg: "Due date cannot be empty",
           },
@@ -104,6 +114,10 @@ module.exports = (sequelize, DataTypes) => {
       completed: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
+      },
+      userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
       },
     },
     {

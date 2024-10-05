@@ -85,19 +85,17 @@
                                 <%= messages.success %>
                             </div>
                             <% } %>
-                                <a href="/signout">Sign-Out</a>
+                                <button><a href="/signout">signout</a></button>
                                 <form action="/todos" method="post" onsubmit="validateForm(event)">
                                     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                                     <div class="flex gap-2 py-4">
                                         <div class="flex-auto">
                                             <input type="text" name="title" placeholder="What's next?"
-                                                class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm"
-                                                required>
+                                                class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm">
                                         </div>
                                         <div class="flex-auto">
                                             <input type="date" name="dueDate"
-                                                class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm leading-tight"
-                                                required>
+                                                class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm leading-tight">
                                         </div>
                                         <div class="flex-none">
                                             <button type="submit"

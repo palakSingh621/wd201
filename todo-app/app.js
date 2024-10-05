@@ -112,7 +112,10 @@ app.get("/login", (request, response) => {
 const { Todo, User } = require("./models");
 
 //render index.ejs with csrfToken
-app.get("/", (request, response) => {
+app.get("/", async (request, response) => {
+  if (request.isAuthenticated()) {
+    return response.redirect("/todos");
+  }
   response.render("index", {
     title: "Todo Application",
     csrfToken: request.csrfToken(),
@@ -168,8 +171,9 @@ app.get("/signup", (request, response) => {
 
 // creating users
 app.post("/users", async (request, response) => {
-  const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
   try {
+    const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
+
     const user = await User.create({
       firstName: request.body.firstName.trim(),
       secondName: request.body.lastName.trim(),
@@ -179,6 +183,8 @@ app.post("/users", async (request, response) => {
     request.login(user, (err) => {
       if (err) {
         console.log(err);
+        request.flash("error", "Error logging in after signup");
+        return response.redirect("/signup");
       }
       request.flash("success", "Signup successful !");
       response.redirect("/todos");
@@ -187,8 +193,10 @@ app.post("/users", async (request, response) => {
     if (error.name === "SequelizeValidationError") {
       const messages = error.errors.map((err) => err.message);
       request.flash("error", messages.join(","));
+    } else if (error.name === "SequelizeUniqueConstraintError") {
+      request.flash("error", "Email already exists");
     } else {
-      request.flash("error", "Something went wrong while creating the todo");
+      request.flash("error", "Error creating user");
     }
     return response.redirect("/signup");
   }
@@ -224,7 +232,7 @@ app.post(
     } catch (error) {
       if (error.name === "SequelizeValidationError") {
         const messages = error.errors.map((err) => err.message);
-        request.flash("error", messages.join(","));
+        request.flash("error", messages.join(", "));
       } else {
         request.flash("error", "Something went wrong while creating the todo");
       }
@@ -277,8 +285,16 @@ app.put(
   "/todos/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    const todo = await Todo.findByPk(request.params.id);
     try {
+      const todo = await Todo.findOne({
+        where: {
+          id: request.params.id,
+          userId: request.user.id,
+        },
+      });
+      if (!todo) {
+        return response.status(404).json({ error: "Todo not found" });
+      }
       const updatedTodo = await todo.setCompletionStatus(
         request.body.completed,
       );
