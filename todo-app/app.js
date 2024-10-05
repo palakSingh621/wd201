@@ -172,21 +172,21 @@ app.get("/signup", (request, response) => {
 // creating users
 app.post("/users", async (request, response) => {
   try {
-    const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
     if (request.body.password.trim() === "") {
-      throw new Error("Password cannot not be empty");
+      request.flash("error", "Password cannot be empty");
+      return response.redirect("/signup");
     }
-    console.log("Creating user:", req.body);
+    const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
     let user = await User.create({
       firstName: request.body.firstName.trim(),
       secondName: request.body.lastName.trim(),
       email: request.body.email.trim(),
       password: hashedPwd,
     });
-    console.log("User created:", user.dataValues);
     request.login(user, (err) => {
       if (err) {
         console.log(err);
+        request.flash("error", "Error logging in after signup");
         return response.redirect("/signup");
       }
       request.flash("success", "Signup successful !");
@@ -195,7 +195,7 @@ app.post("/users", async (request, response) => {
   } catch (error) {
     if (error.name === "SequelizeValidationError") {
       const messages = error.errors.map((err) => err.message);
-      request.flash("error", messages.join(","));
+      request.flash("error", messages);
     } else if (error.name === "SequelizeUniqueConstraintError") {
       request.flash("error", "Email already exists");
     } else {
@@ -236,7 +236,7 @@ app.post(
     } catch (error) {
       if (error.name === "SequelizeValidationError") {
         const messages = error.errors.map((err) => err.message);
-        request.flash("error", messages.join(", "));
+        request.flash("error", messages);
       } else {
         request.flash("error", "Something went wrong while creating the todo");
       }
