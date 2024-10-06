@@ -1,7 +1,9 @@
+/* eslint-disable no-unused-vars */
 const request = require("supertest");
 var cheerio = require("cheerio");
 const db = require("../models/index");
 const app = require("../app");
+const user = require("../models/user");
 
 let server, agent;
 
@@ -11,8 +13,17 @@ function extractCsrfToken(response) {
 }
 
 const login = async (agent, username, password) => {
+  // let res = await agent.get("/signup");
+  // let csrfToken = extractCsrfToken(res);
+  //   res = await agent.post("/users").send({
+  //     firstName: "Test",
+  //     secondName: "User A",
+  //     email: username,
+  //     password: password,
+  //     _csrf: csrfToken,
+  //   });
   let res = await agent.get("/login");
-  let csrfToken = extractCsrfToken(res);
+  const csrfToken = extractCsrfToken(res);
   res = await agent.post("/session").send({
     email: username,
     password: password,
@@ -47,6 +58,12 @@ describe("Todo application", function () {
       _csrf: csrfToken,
     });
     expect(res.statusCode).toBe(302);
+
+    const todosResponse = await agent
+      .get("/todos")
+      .set("Accept", "application/json");
+
+    expect(todosResponse.text).toBeDefined();
   });
 
   test("Sign out test", async () => {
@@ -77,8 +94,9 @@ describe("Todo application", function () {
     const agent = request.agent(server);
     await login(agent, "user.a@test.com", "12345678");
 
-    let res = await agent.get("/signup");
-    let csrfToken = extractCsrfToken(res);
+    const res = await agent.get("/signup");
+    const csrfToken = extractCsrfToken(res);
+    expect(csrfToken).toBeDefined();
     await agent.post("/todos").send({
       title: "Buy milk",
       dueDate: new Date().toISOString(),
@@ -92,53 +110,25 @@ describe("Todo application", function () {
 
     if (groupedTodosResponse.text) {
       const parsedGroupedResponse = JSON.parse(groupedTodosResponse.text);
-      expect(parsedGroupedResponse.dueTodayTasks).toBeDefined();
-      const dueTodayCount = parsedGroupedResponse.dueTodayTasks.length;
-      const latestTodo = parsedGroupedResponse.dueTodayTasks[dueTodayCount - 1];
-      expect(latestTodo).toBeDefined();
-      res = await agent.get("/todos");
-      csrfToken = extractCsrfToken(res);
+      const dueTodayTasks = parsedGroupedResponse.dueTodayTasks;
+      const todoID = dueTodayTasks[0].id;
+      //testing for false to true
       const setCompletionStatus = await agent
-        .put(`/todos/${latestTodo.id}`)
+        .put(`/todos/${todoID}`)
         .send({ completed: true, _csrf: csrfToken });
       const parsedUpdateResponse = JSON.parse(setCompletionStatus.text);
       expect(parsedUpdateResponse.completed).toBe(true);
-    } else {
-      console.error("Empty response received:", groupedTodosResponse);
-    }
-  });
 
-  test("Marks a todo as incomplete", async () => {
-    const agent = request.agent(server);
-    await login(agent, "user.a@test.com", "12345678");
-    let res = await agent.get("/todos");
-    let csrfToken = extractCsrfToken(res);
-    await agent.post("/todos").send({
-      title: "Buy milk",
-      dueDate: new Date().toISOString(),
-      completed: true,
-      _csrf: csrfToken,
-    });
-
-    const groupedTodosResponse = await agent
-      .get("/todos")
-      .set("Accept", "application/json");
-
-    if (groupedTodosResponse.text) {
-      const parsedGroupedResponse = JSON.parse(groupedTodosResponse.text);
-      expect(parsedGroupedResponse.dueTodayTasks).toBeDefined();
-      const dueTodayCount = parsedGroupedResponse.dueTodayTasks.length;
-      const latestTodo = parsedGroupedResponse.dueTodayTasks[dueTodayCount - 1];
-      expect(latestTodo).toBeDefined();
-      res = await agent.get("/todos");
-      csrfToken = extractCsrfToken(res);
-      const setCompletionStatus = await agent
-        .put(`/todos/${latestTodo.id}`)
+      //testing for true to false
+      const setCompletionStatus2 = await agent
+        .put(`/todos/${todoID}`)
         .send({ completed: false, _csrf: csrfToken });
-      const parsedUpdateResponse = JSON.parse(setCompletionStatus.text);
-      expect(parsedUpdateResponse.completed).toBe(false);
+      const parsedUpdateResponse2 = JSON.parse(setCompletionStatus2.text);
+      expect(parsedUpdateResponse2.completed).toBe(false);
     } else {
-      console.error("Empty response received:", groupedTodosResponse);
+      // console.error("Full response object:", groupedTodosResponse);
+      console.error("Response status:", groupedTodosResponse.status);
+      // console.error("Response text:", groupedTodosResponse.text);
     }
   });
 
@@ -163,32 +153,86 @@ describe("Todo application", function () {
   test("Deletes a todo", async () => {
     const agent = request.agent(server);
     await login(agent, "user.a@test.com", "12345678");
-    let res = await agent.get("/todos");
-    let csrfToken = extractCsrfToken(res);
+    const res = await agent.get("/signup");
+    const csrfToken = extractCsrfToken(res);
+    expect(csrfToken).toBeDefined();
     await agent.post("/todos").send({
       title: "Buy groceries",
       dueDate: new Date().toISOString(),
       completed: false,
       _csrf: csrfToken,
     });
-
-    const groupedTodosResponse = await agent
+    const todoResponse = await agent
       .get("/todos")
       .set("Accept", "application/json");
-    if (groupedTodosResponse.text) {
-      const parsedGroupedResponse = JSON.parse(groupedTodosResponse.text);
-      expect(parsedGroupedResponse.dueTodayTasks).toBeDefined();
-      const dueTodayCount = parsedGroupedResponse.dueTodayTasks.length;
-      const latestTodo = parsedGroupedResponse.dueTodayTasks[dueTodayCount - 1];
-      expect(latestTodo).toBeDefined();
-      res = await agent.get("/todos");
-      csrfToken = extractCsrfToken(res);
+
+    if (todoResponse.text) {
+      const parsedMixedResponse = JSON.parse(todoResponse.text);
+      const todoID = parsedMixedResponse.dueTodayTasks[0].id;
+
       const deleteResponse = await agent
-        .delete(`/todos/${latestTodo.id}`)
+        .delete(`/todos/${todoID}`)
         .send({ _csrf: csrfToken });
       expect(deleteResponse.statusCode).toBe(200);
+      const parsedDeleteResponse = JSON.parse(deleteResponse.text);
+      expect(parsedDeleteResponse.success).toBe(true);
     } else {
-      console.error("Empty response received:", groupedTodosResponse);
+      //   console.error("Full response object:", todoResponse);
+      console.error("Response status:", todoResponse.status);
+      //   console.error("Response text:", todoResponse.text);
+    }
+  });
+
+  test("check cross-accessing someone else's todo", async () => {
+    let agent = request.agent(server);
+
+    await login(agent, "user.a@test.com", "12345678");
+    let res = await agent.get("/signup");
+    let csrfToken = extractCsrfToken(res);
+
+    await agent.post("/todos").send({
+      title: "Demo Todo",
+      dueDate: new Date().toISOString(),
+      completed: false,
+      _csrf: csrfToken,
+    });
+
+    const todoResponse = await agent
+      .get("/todos")
+      .set("Accept", "application/json");
+
+    if (todoResponse.text) {
+      const parsedMixedResponse = JSON.parse(todoResponse.text);
+      const todoID = parsedMixedResponse.dueTodayTasks[0].id;
+
+      await agent.get("/signout");
+
+      res = await agent.get("/signup");
+      csrfToken = extractCsrfToken(res);
+
+      await agent.post("/users").send({
+        firstName: "Test",
+        lastName: "User 2",
+        email: "user2@test.com",
+        password: "password",
+        _csrf: csrfToken,
+      });
+
+      await login(agent, "user2@test.com", "password");
+
+      const setCompletionResponse = await agent
+        .put(`/todos/${todoID}`)
+        .send({ completed: true, _csrf: csrfToken });
+      expect(setCompletionResponse.statusCode).toBe(403);
+      // Try to delete the todo
+      const deleteResponse = await agent
+        .delete(`/todos/${todoID}`)
+        .send({ _csrf: csrfToken });
+      expect(deleteResponse.statusCode).toBe(403);
+    } else {
+      //   console.error("Full response object:", todoResponse);
+      console.error("Response status:", todoResponse.status);
+      //   console.error("Response text:", todoResponse.text);
     }
   });
 });

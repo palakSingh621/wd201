@@ -12,29 +12,26 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script>
-        var token = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
+        let token = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
 
         function updateTodo(id, isCompleted) {
             fetch(`/todos/${id}`, {
-                credentials: 'same-origin',
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     "_csrf": token,
                     "completed": isCompleted
-                })
+                }),
+            }).then((res) => {
+                if (res.ok) {
+                    window.location.reload();
+                }
             })
-                .then((res) => {
-                    if (res.ok) {
-                        window.location.reload();
-                    }
-                })
                 .catch((err) => console.error(err));
         }
 
         function deleteTodo(id) {
             fetch(`/todos/${id}`, {
-                credentials: 'same-origin',
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -51,19 +48,8 @@
                 .catch((err) => console.error(err));
         }
 
-        function validateForm(event) {
-            const titleInput = document.querySelector('input[name="title"]');
-
-            if (titleInput.value.trim() === "") {
-                alert("Title cannot be empty!");
-                event.preventDefault();
-                return;
-            }
-        }
-
-        const logoutbtn = document.getElementById("logoutbtn")
-        const logout = ()=>{
-          window.location.href = '/signout'
+        const logout = () => {
+            window.location.href = '/signout'
         }
     </script>
 </head>
@@ -72,38 +58,46 @@
     <div class="grid grid-cols-6">
         <div class="col-start-3 col-span-2">
             <%- include('header.ejs') %>
-            <% if(messages.success){%>
-                <div class="success-message">
-                    <%= messages.success %>
-                </div>
-            <% } %>
-            <button id="logoutbtn" class="m-5 p-2 rounded text-white bg-red-600" onclick="logout()" >signout</button>
-            <form action="/todos" method="post" onsubmit="validateForm(event)">
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                <div class="flex gap-2 py-4">
-                    <div class="flex-auto">
-                        <input type="text" name="title" placeholder="What's next?" class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm">
+                <% if(messages.success){%>
+                    <div class="success-message">
+                        <%= messages.success %>
                     </div>
-                    <div class="flex-auto">
-                        <input type="date" name="dueDate" class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm leading-tight">
-                    </div>
-                    <div class="flex-none">
-                        <button type="submit" class="bg-green-600 text-white px-5 py-1.5 rounded font-medium mr-2 mb-2">Add</button>
-                    </div>
-                </div>
-            </form>
-            <div>
-                <%- include('todo.ejs')%>
-            </div>
-            <% if(messages && messages.error && messages.error.length> 0) { %>
-                <% for(var i=0; i<messages.error.length; i++) { %>
-                    <li>
-                        <p class="bg-red-200 my-3 list-none rounded px-4 py-2"><%= messages.error[i] %><br></p>
-                    </li>
-                <% } %>
-            <% } %>
+                    <% } %>
+                        <button class="m-5 px-2 py-1 rounded text-white bg-red-600" onclick="logout()">signout</button>
+                        <form action="/todos" method="post">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                            <div class="flex gap-2 py-4">
+                                <div class="flex-auto">
+                                    <input type="text" name="title" placeholder="What's next?"
+                                        class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm">
+                                </div>
+                                <div class="flex-auto">
+                                    <input type="date" name="dueDate"
+                                        class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm leading-tight">
+                                </div>
+                                <div class="flex-none">
+                                    <button type="submit"
+                                        class="bg-green-600 text-white px-5 py-1.5 rounded font-medium mr-2 mb-2">Add</button>
+                                </div>
+                            </div>
+                        </form>
+                        <div>
+                            <%- include('todo.ejs')%>
+                        </div>
+                        <% if(messages && messages.error && messages.error.length> 0) { %>
+                            <% for(var i=0; i<messages.error.length; i++) { %>
+                                <div class="bg-red-200 text-red-800 p-3 rounded mb-4">
+                                    <ul>
+                                        <li>
+                                            <%= messages.error[i] %>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <% } %>
+                                    <% } %>
+                                        <%- include('footer.ejs') %>
         </div>
     </div>
-    <%- include('footer.ejs') %>
 </body>
+
 </html>
