@@ -23,7 +23,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser("ssh! some secret string"));
 app.use(csrf("123456789iamasecret987654321look", ["POST", "PUT", "DELETE"])); //secret key should be 32-characters long
-
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use(
@@ -33,7 +32,6 @@ app.use(
     cookie: {
       maxAge: 24 * 60 * 60 * 1000, //24hrs
     },
-    httpOnly: true,
     sameSite: "Strict",
     resave: true,
     saveUninitialized: true,
@@ -101,18 +99,16 @@ app.get("/", async (request, response) => {
   if (request.isAuthenticated()) {
     return response.redirect("/todos");
   }
-  if (request.accepts("html")) {
-    return response.render("index", {
-      title: "Todo Application",
-      csrfToken: request.csrfToken(),
-    });
-  }
+  return response.render("index", {
+    title: "Todo Manager",
+    csrfToken: request.csrfToken(),
+  });
 });
 
 //sign up
 app.get("/signup", (request, response) => {
   response.render("signup", {
-    title: "Sign Up",
+    title: "Signup",
     csrfToken: request.csrfToken(),
   });
 });
@@ -162,7 +158,7 @@ app.get(
 
       if (request.accepts("html")) {
         response.render("todos", {
-          title: "Todo Application",
+          title: "Todo Manager",
           overdueTasks,
           dueTodayTasks,
           dueLaterTasks,
@@ -171,12 +167,6 @@ app.get(
         });
       } else {
         response.setHeader("Content-Type", "application/json");
-        console.error({
-          overdueTasks,
-          dueTodayTasks,
-          dueLaterTasks,
-          completedTasks,
-        });
         response.json({
           overdueTasks,
           dueTodayTasks,
@@ -226,7 +216,7 @@ app.post("/users", async (request, response) => {
       return response.redirect("/signup");
     }
     const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
-    let user = await User.create({
+    const user = await User.create({
       firstName: request.body.firstName.trim(),
       secondName: request.body.lastName.trim(),
       email: request.body.email.trim(),
@@ -248,7 +238,7 @@ app.post("/users", async (request, response) => {
     } else if (error.name === "SequelizeUniqueConstraintError") {
       request.flash("error", "Email already exists");
     } else {
-      request.flash("error", "Error creating user");
+      request.flash("error", "Something went wrong while creating the todo");
     }
     return response.redirect("/signup");
   }
@@ -260,17 +250,14 @@ app.post(
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     console.error("Incoming request data:", request.body);
-    console.error("CSRF Token:", request.csrfToken());
     try {
-      const todo = await Todo.addTodo({
+      await Todo.addTodo({
         title: request.body.title.trim(),
         dueDate: request.body.dueDate.trim(),
-        completed: request.body.completed,
         userId: request.user.id,
       });
       request.flash("success", "Todo created successfully!");
-      if (request.accepts("html")) return response.redirect("/todos");
-      else response.json(todo);
+      return response.redirect("/todos");
     } catch (error) {
       if (error.name === "SequelizeValidationError") {
         const messages = error.errors.map((err) => err.message);
@@ -283,41 +270,22 @@ app.post(
   },
 );
 
-// // get all todos
-// app.get("/todos", connectEnsureLogin.ensureLoggedIn(), async function (request, response) {
-//   console.log("Processing list of all Todos ...");
-//   try {
-//     const todos = await Todo.findAll({
-//       where:{
-//         userId:request.user.id,
-//       }
-//     });
-//     response.send(todos);
-//   } catch (error) {
-//     console.error("Error fetching todos:", error);
-//     response.status(500).send("Error fetching todos");
-//   }
-// });
-
 //update todo completed status
 app.put(
   "/todos/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
+    const todo = await Todo.findOne({
+      where: {
+        id: request.params.id,
+        userId: request.user.id,
+      },
+    });
     try {
-      const todo = await Todo.findOne({
-        where: {
-          id: request.params.id,
-          userId: request.user.id,
-        },
-      });
-      if (!todo) {
-        return response.status(404).json({ error: "Todo not found" });
-      }
       const updatedTodo = await todo.setCompletionStatus(
         request.body.completed,
       );
-      response.json(updatedTodo);
+      return response.json(updatedTodo);
     } catch (error) {
       console.log(error);
       response.status(422).json(error);
@@ -330,7 +298,6 @@ app.delete(
   "/todos/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    console.log("delete todo with id:", request.params.id);
     try {
       const data = await Todo.remove(request.params.id, request.user.id);
       if (data == 1) {
@@ -344,17 +311,5 @@ app.delete(
     }
   },
 );
-
-// //testing route
-// app.get("/test_todos", async function (_request, response) {
-//   console.log("Processing list of all Todos ...");
-//   try {
-//     const todos = await Todo.findAll();
-//     response.send(todos);
-//   } catch (error) {
-//     console.log(error);
-//     return response.status(422).json(error);
-//   }
-// });
 
 module.exports = app;

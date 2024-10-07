@@ -13,15 +13,6 @@ function extractCsrfToken(response) {
 }
 
 const login = async (agent, username, password) => {
-  // let res = await agent.get("/signup");
-  // let csrfToken = extractCsrfToken(res);
-  //   res = await agent.post("/users").send({
-  //     firstName: "Test",
-  //     lastName: "User A",
-  //     email: username,
-  //     password: password,
-  //     _csrf: csrfToken,
-  //   });
   let res = await agent.get("/login");
   const csrfToken = extractCsrfToken(res);
   res = await agent.post("/session").send({
@@ -62,8 +53,6 @@ describe("Todo application", function () {
     const todosResponse = await agent
       .get("/todos")
       .set("Accept", "application/json");
-
-    // expect(todosResponse.text).toBeDefined();
     if (todosResponse.status === 302) {
       console.error("Redirected to:", todosResponse.headers.location);
     }

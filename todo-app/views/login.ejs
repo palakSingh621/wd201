@@ -10,15 +10,6 @@
     </title>
     <link href="./css/styles.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        document.querySelector("form").addEventListener("submit", function (event) {
-            const emailInput = document.querySelector('input[name="email"]');
-            if (!emailInput.value.includes('@')) {
-                alert("Please enter a valid email address.");
-                event.preventDefault();
-            }
-        });
-    </script>
 </head>
 
 <body>
@@ -40,7 +31,7 @@
                     </div>
                     <div class="py-3">
                         <button type="submit"
-                            class="text-white bg-green-600 hover:bg-green-800 px-5 py-1.5 rounded font-medium mr-2 mb-2">Sign-In</button>
+                            class="text-white bg-green-600 hover:bg-green-800 px-5 py-1.5 rounded font-medium mr-2 mb-2">signin</button>
                     </div>
                 </form>
                 <% if(messages && messages.error && messages.error.length> 0) { %>
@@ -52,10 +43,11 @@
                                 </li>
                             </ul>
                         </div>
-                        <% } %>
-                            <% } %>
-                                <%- include('footer.ejs') %>
+                    <% } %>
+                <% } %>
+            <%- include('footer.ejs') %>
         </div>
+    </div>
 </body>
 
 </html>
