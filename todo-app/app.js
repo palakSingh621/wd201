@@ -35,8 +35,8 @@ app.use(
     },
     httpOnly: true,
     sameSite: "Strict",
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
   }),
 );
 
@@ -222,7 +222,7 @@ app.post("/users", async (request, response) => {
       return response.redirect("/signup");
     }
     if (request.body.password.length < 8) {
-      request.flash("error", "Password length should be minimun 8");
+      request.flash("error", "Password length should be minimum 8");
       return response.redirect("/signup");
     }
     const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
@@ -345,16 +345,16 @@ app.delete(
   },
 );
 
-//testing route
-app.get("/test_todos", async function (_request, response) {
-  console.log("Processing list of all Todos ...");
-  try {
-    const todos = await Todo.findAll();
-    response.send(todos);
-  } catch (error) {
-    console.log(error);
-    return response.status(422).json(error);
-  }
-});
+// //testing route
+// app.get("/test_todos", async function (_request, response) {
+//   console.log("Processing list of all Todos ...");
+//   try {
+//     const todos = await Todo.findAll();
+//     response.send(todos);
+//   } catch (error) {
+//     console.log(error);
+//     return response.status(422).json(error);
+//   }
+// });
 
 module.exports = app;

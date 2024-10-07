@@ -16,6 +16,7 @@
 
         function updateTodo(id, isCompleted) {
             fetch(`/todos/${id}`, {
+                credentials: 'same-origin',
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -32,6 +33,7 @@
 
         function deleteTodo(id) {
             fetch(`/todos/${id}`, {
+                credentials: 'same-origin',
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -59,7 +61,7 @@
         <div class="col-start-3 col-span-2">
             <%- include('header.ejs') %>
                 <% if(messages.success){%>
-                    <div class="success-message">
+                    <div class="bg-green-200 text-green-800 p-3 rounded mb-4">
                         <%= messages.success %>
                     </div>
                     <% } %>
@@ -69,11 +71,11 @@
                             <div class="flex gap-2 py-4">
                                 <div class="flex-auto">
                                     <input type="text" name="title" placeholder="What's next?"
-                                        class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm">
+                                        class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm" required>
                                 </div>
                                 <div class="flex-auto">
                                     <input type="date" name="dueDate"
-                                        class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm leading-tight">
+                                        class="border border-gray-600 rounded w-full p-2 text-gray-700 text-sm leading-tight" required>
                                 </div>
                                 <div class="flex-none">
                                     <button type="submit"
