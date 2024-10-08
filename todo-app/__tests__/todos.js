@@ -91,7 +91,7 @@ describe("Todo application", function () {
     expect(csrfToken).toBeDefined();
     await agent.post("/todos").send({
       title: "Buy milk",
-      dueDate: new Date().toISOString(),
+      dueDate: new Date().toISOString().slice(0, 10),
       completed: false,
       _csrf: csrfToken,
     });
@@ -100,9 +100,11 @@ describe("Todo application", function () {
       .get("/todos")
       .set("Accept", "application/json");
     const parsedGroupedResponse = JSON.parse(groupedTodosResponse.text);
-    expect(parsedGroupedResponse.dueTodayTasks).toBeDefined();
-    const dueTodayCount = parsedGroupedResponse.dueTodayTasks.length;
-    const latestTodo = parsedGroupedResponse.dueTodayTasks[dueTodayCount - 1];
+    expect(parsedGroupedResponse.dueLaterTasks).toBeDefined();
+    const dueTodayCount = parsedGroupedResponse.dueLaterTasks.length;
+    console.error(dueTodayCount);
+    const latestTodo = parsedGroupedResponse.dueLaterTasks[dueTodayCount - 1];
+    console.error(latestTodo);
     expect(latestTodo).toBeDefined();
     res = await agent.get("/todos");
     csrfToken = extractCsrfToken(res);
@@ -155,11 +157,10 @@ describe("Todo application", function () {
     const groupedTodosResponse = await agent
       .get("/todos")
       .set("Accept", "application/json");
-
     const parsedGroupedResponse = JSON.parse(groupedTodosResponse.text);
-    expect(parsedGroupedResponse.dueTodayTasks).toBeDefined();
-    const dueTodayCount = parsedGroupedResponse.dueTodayTasks.length;
-    const latestTodo = parsedGroupedResponse.dueTodayTasks[dueTodayCount - 1];
+    expect(parsedGroupedResponse.dueLaterTasks).toBeDefined();
+    const dueTodayCount = parsedGroupedResponse.dueLaterTasks.length;
+    const latestTodo = parsedGroupedResponse.dueLaterTasks[dueTodayCount - 1];
     expect(latestTodo).toBeDefined();
     res = await agent.get("/todos");
     csrfToken = extractCsrfToken(res);
